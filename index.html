@@ -1,0 +1,275 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>infinityTolls</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Fonte Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Personalização da barra de rolagem */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col justify-between selection:bg-brand-500 selection:text-white">
+
+    <!-- Container Principal -->
+    <div class="max-w-4xl mx-auto px-4 py-12 w-full flex-grow flex flex-col justify-center">
+
+        <!-- Cabeçalho -->
+        <header class="text-center mb-10">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-xs font-semibold mb-4">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Ferramenta de Bookmarklet
+            </div>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-white mb-3">
+                Copiar <span class="bg-gradient-to-r from-brand-400 to-indigo-400 bg-clip-text text-transparent">Bookmarklet</span>
+            </h1>
+            <p class="text-slate-400 text-base md:text-lg max-w-xl mx-auto">
+                Copie o script formatado com um único clique ou arraste o botão diretamente para a sua barra de favoritos.
+            </p>
+        </header>
+
+        <!-- Seção Central de Ação -->
+        <main class="space-y-8">
+            
+            <!-- Card de Destaque: Botão Principal de Copiar -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-8 backdrop-blur-sm shadow-2xl text-center space-y-6">
+                
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <!-- Botão Principal de Cópia -->
+                    <button id="btnCopy" onclick="copyBookmarklet()" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 active:scale-95 text-white font-bold text-lg rounded-xl shadow-lg shadow-brand-500/25 transition-all duration-200 flex items-center justify-center gap-3 group cursor-pointer">
+                        <i id="btnIcon" class="fa-regular fa-copy group-hover:rotate-6 transition-transform"></i>
+                        <span id="btnText">Copiar Bookmarklet</span>
+                    </button>
+
+                    <!-- Botão Arrastável (Drag & Drop para Favoritos) -->
+                    <a id="dragLink" href="javascript:(function(){alert('Olá! Este é o seu Bookmarklet.');})();" onclick="preventDragClick(event)" class="w-full sm:w-auto px-6 py-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold text-base rounded-xl transition-all flex items-center justify-center gap-2 cursor-grab active:cursor-grabbing group" title="Arraste para a sua barra de favoritos">
+                        <i class="fa-solid fa-grip-dots-vertical text-slate-500 group-hover:text-slate-300"></i>
+                        <i class="fa-solid fa-star text-amber-400"></i>
+                        <span id="dragLabel">Meu Bookmarklet</span>
+                    </a>
+                </div>
+
+                <p class="text-xs text-slate-500 flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-circle-info"></i> Clique para copiar o código ou arraste o botão de favoritos para a sua barra superior.
+                </p>
+
+            </div>
+
+            <!-- Editor / Input do Bookmarklet -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <label for="jsInput" class="text-sm font-semibold text-slate-300 flex items-center gap-2">
+                        <i class="fa-solid fa-code text-brand-400"></i> Código JavaScript do Bookmarklet
+                    </label>
+                    <div class="flex items-center gap-2">
+                        <button onclick="loadExample()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition-colors">
+                            Carregar Exemplo
+                        </button>
+                        <button onclick="clearEditor()" class="text-xs bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-400 px-3 py-1.5 rounded-lg border border-slate-700 hover:border-red-500/30 transition-colors">
+                            Limpar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Campo de Texto (Editor) -->
+                <div class="relative">
+                    <textarea id="jsInput" rows="6" oninput="updateBookmarklet()" class="w-full bg-slate-950 text-emerald-400 font-mono text-sm p-4 rounded-xl border border-slate-800 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none resize-y transition-all" placeholder="Cole ou digite seu código JS aqui..."></textarea>
+                </div>
+
+                <!-- Campo de Título do Bookmarklet -->
+                <div class="flex items-center gap-3 bg-slate-950 p-3 rounded-xl border border-slate-800">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider pl-1">Nome do Botão:</span>
+                    <input type="text" id="nameInput" oninput="updateName()" value="Meu Bookmarklet" class="bg-transparent text-sm text-slate-200 outline-none flex-grow font-medium" placeholder="Ex: Mudar Fundo para Escuro">
+                </div>
+            </div>
+
+            <!-- Seção de Instruções / Ajuda -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-slate-900/50 border border-slate-800/80 p-5 rounded-xl space-y-2">
+                    <div class="w-8 h-8 rounded-lg bg-brand-500/10 text-brand-400 flex items-center justify-center font-bold text-sm">1</div>
+                    <h3 class="font-semibold text-slate-200">Personalize o código</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed">Altere o código JavaScript no campo acima ou use o código padrão pronto para uso.</p>
+                </div>
+
+                <div class="bg-slate-900/50 border border-slate-800/80 p-5 rounded-xl space-y-2">
+                    <div class="w-8 h-8 rounded-lg bg-brand-500/10 text-brand-400 flex items-center justify-center font-bold text-sm">2</div>
+                    <h3 class="font-semibold text-slate-200">Arraste ou Copie</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed">Arraste o botão com estrela diretamente para a barra de favoritos ou clique no botão central para copiar.</p>
+                </div>
+
+                <div class="bg-slate-900/50 border border-slate-800/80 p-5 rounded-xl space-y-2">
+                    <div class="w-8 h-8 rounded-lg bg-brand-500/10 text-brand-400 flex items-center justify-center font-bold text-sm">3</div>
+                    <h3 class="font-semibold text-slate-200">Execute em qualquer site</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed">Acesse a página que deseja modificar e clique no favorito salvo no seu navegador!</p>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Rodapé -->
+        <footer class="mt-16 text-center text-xs text-slate-500 border-t border-slate-900 pt-6">
+            <p>Gerador de Bookmarklet &copy; <span id="year"></span>. Ferramenta simples, rápida e sem dependências externas.</p>
+        </footer>
+
+    </div>
+
+    <!-- Script de Lógica e Interação -->
+    <script>
+        // Código padrão do exemplo
+        const defaultScript = `// Exemplo: Destacar todos os links da página
+document.querySelectorAll('a').forEach(link => {
+    link.style.outline = '2px dashed #3b82f6';
+    link.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+});
+alert('Todos os links foram destacados!');`;
+
+        const jsInput = document.getElementById('jsInput');
+        const nameInput = document.getElementById('nameInput');
+        const dragLink = document.getElementById('dragLink');
+        const dragLabel = document.getElementById('dragLabel');
+        const btnCopy = document.getElementById('btnCopy');
+        const btnText = document.getElementById('btnText');
+        const btnIcon = document.getElementById('btnIcon');
+
+        // Define ano no rodapé
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Inicializar com código padrão
+        jsInput.value = defaultScript;
+        updateBookmarklet();
+
+        // Converte o código JS em formato URL Bookmarklet javascript:
+        function getBookmarkletURL(rawJs) {
+            if (!rawJs.trim()) return 'javascript:void(0);';
+            // Minifica/encoda suavemente para manter funcionalidade de URL
+            const cleaned = rawJs.trim();
+            // Se já não começar com IIFE ou javascript:, envolve em uma IIFE tratada
+            const formatted = `javascript:(function(){${cleaned}})();`;
+            return formatted;
+        }
+
+        // Atualiza os dados do botão arrastável em tempo real
+        function updateBookmarklet() {
+            const rawJs = jsInput.value;
+            const bookmarkletUrl = getBookmarkletURL(rawJs);
+            dragLink.href = bookmarkletUrl;
+        }
+
+        // Atualiza o nome exibido no botão arrastável
+        function updateName() {
+            const name = nameInput.value.trim() || 'Bookmarklet';
+            dragLabel.textContent = name;
+        }
+
+        // Impede que o clique no botão arrastável navegue fora se for clicado diretamente
+        function preventDragClick(e) {
+            // Permite que o usuário teste o código ao clicar diretamente no botão de arrastar
+            // Mas não recarrega a página de forma abrupta
+        }
+
+        // Função de Copiar para Área de Transferência
+        function copyBookmarklet() {
+            const bookmarkletUrl = getBookmarkletURL(jsInput.value);
+
+            // Método seguro de cópia para a área de transferência
+            const tempInput = document.createElement('textarea');
+            tempInput.value = bookmarkletUrl;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            
+            let success = false;
+            try {
+                success = document.execCommand('copy');
+            } catch (err) {
+                console.error('Erro ao copiar: ', err);
+            }
+            document.body.removeChild(tempInput);
+
+            if (success) {
+                showSuccessFeedback();
+            } else {
+                alert('Não foi possível copiar automaticamente. Por favor, selecione e copie manualmente.');
+            }
+        }
+
+        // Feedback Visual Instantâneo no Botão
+        function showSuccessFeedback() {
+            // Altera estado visual do botão
+            btnCopy.classList.remove('from-brand-600', 'to-indigo-600', 'hover:from-brand-500', 'hover:to-indigo-500');
+            btnCopy.classList.add('bg-emerald-600', 'hover:bg-emerald-500');
+            
+            btnText.textContent = 'Copiado!';
+            btnIcon.className = 'fa-solid fa-check text-xl animate-bounce';
+
+            // Restaura o botão após 2.5 segundos
+            setTimeout(() => {
+                btnCopy.classList.remove('bg-emerald-600', 'hover:bg-emerald-500');
+                btnCopy.classList.add('from-brand-600', 'to-indigo-600', 'hover:from-brand-500', 'hover:to-indigo-500');
+                
+                btnText.textContent = 'Copiar Bookmarklet';
+                btnIcon.className = 'fa-regular fa-copy group-hover:rotate-6 transition-transform';
+            }, 2500);
+        }
+
+        // Carrega Exemplo de Código
+        function loadExample() {
+            const examples = [
+                `// Modos escuro forçado na página\ndocument.body.style.filter = 'invert(1) hue-rotate(180deg)';`,
+                `// Tornar qualquer página editável\ndocument.designMode = document.designMode === 'on' ? 'off' : 'on';\nalert('Edição de página: ' + document.designMode);`,
+                `// Revelar senhas em campos de texto\ndocument.querySelectorAll('input[type="password"]').forEach(p => p.type = 'text');`
+            ];
+            const randomIndex = Math.floor(Math.random() * examples.length);
+            jsInput.value = examples[randomIndex];
+            updateBookmarklet();
+        }
+
+        // Limpa o Editor
+        function clearEditor() {
+            jsInput.value = '';
+            updateBookmarklet();
+            jsInput.focus();
+        }
+    </script>
+</body>
+</html>
